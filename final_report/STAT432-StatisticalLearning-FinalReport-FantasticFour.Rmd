@@ -1,0 +1,43 @@
+---
+title: "Final Project"
+author: "Fantastic Four"
+date: "November 6, 2018"
+output:
+  html_document:
+    toc: true
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Abstract
+
+# Background
+
+1. What is fMRI and resting state. Why is resting state so important.
+
+2. What is functional connectivity and what is the evidence that it is contains coginitive content
+
+3. What is dynamic functional connectivity. Why is it important.
+
+4. What are some of the common parameters/approaches used in dc-fMRI. Why are these assumptions prolematic
+
+5. How do we plan to assess the suitablity of these parameters
+
+# Methods
+
+1. Describe the data set
+
+2. Describe the preprocessing
+
+3. Describe the connectivity matrix creation
+
+4. Describe the analysis
+
+# Results
+TBD
+
+# Discussion?
+
+
