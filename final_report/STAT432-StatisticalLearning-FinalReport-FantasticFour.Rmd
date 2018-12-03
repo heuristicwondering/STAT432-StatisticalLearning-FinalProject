@@ -6,24 +6,31 @@ output:
   html_document:
     toc: true
 urlcolor: blue
+bibliography: bibliography.bib
+csl: ieee-transactions-on-medical-imaging.csl
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 # Abstract
+Mind wandering (a type of task unconstrained thought) is an important phenomenon that is presumed to occur during resting state imaging paradigms. Little is known about the temporal dynamics of these thoughts during the resting state, however the dynamics of brain connectivity which presumably represent such thoughts are beginning to be explored with dynamic connectivity in fMRI. Current techniques for classifying similarities of brain connectivity in this approach have not been evaluated for the meaningfulness of their classifications. This proposed study uses inferred cognitive states as the "true classification" of a given brain state allowing for testing of classification accuracy. Under the principled presumption that classification accuracy during task paradigms can provide an estimate of accuracy during rest paradigms we use two emotional processing tasks to evaluate these methods. Cognitive states are inferred by the stimuli being presented during two different block design tasks and metrics of psychopathology such as depression and anxiety. Modern clustering algorithms are tested as to whether they provide clusters that accurately overlap stimuli presentation during two block design tasks subject to potential covariance with measures of psychopathology symptoms.
 
 # Background
+There is a wealth of evidence that when humans aren't engaged in any externally oriented task, they are consistently immersed in a phenomenon called mind-wandering (@binder1999conceptual,@buckner2008brain,@christoff2016mind,@mason2007wandering,@smallwood2015science). This is a type of unconstrained thought that may facilitate creativity and problem solving (@fox2015wandering), but in more maladaptive forms, may be repsonsible for the recurrence and maintenance of both depressive and anxious disorders (@teasdale1983negative,@burdwood2016resting,@nolen1991responses,@nolen2000role).
 
-1. What is fMRI and resting state. Why is resting state so important.
+*Dynamic connectivity* is comparitively recent development in functional neuroimaging analysis that shows immense promise towards understanding the role of mind-wandering in health and disease (@kucyi2014dynamic). For the interested reader, please refer to the original study proposal for a more comrehensive overview of the concepts involved in dynamic connectivity. Briefly, by calculating brain connectivity (*a.k.a* correlations of hemodynamic fluctuations across brain regions) on short time windows (on the order of seconds to minutes) rather than across an entire scan (which are on the order of 10 to 20 minutes), we can capture the temporal fluctuations of brain activity across a scan (@hutchison2013dynamic). These fluctations presumably reflect, in part, the fluctuations of the internal contents of thought.
 
-2. What is functional connectivity and what is the evidence that it is contains coginitive content
+A current common practice to label similar connectivity matrices produced by this approach is k-means clustering using either the L1 (Manhattan distance) or L2 (Euclidean distance) norms (@hutchison2013dynamic,@allen2014tracking). Typically, the k-means derived clusters are assumed to represent either unitary cognitive states or transitions between two unitary states.
 
-3. What is dynamic functional connectivity. Why is it important.
+K-means clustering however, will always produce clusters regardless of how well those clusters represent the underlying distribution of the data. Under certain distributions, k-means clusters have little if any relation to the regularities inherent in the data. The algorithm underlying k-means seeks to minimize the within-cluster distance objective function. For the case of the commonly used Euclidean distance:
 
-4. What are some of the common parameters/approaches used in dc-fMRI. Why are these assumptions prolematic
+\[
+\sum_{i=0}^{n} \min_{\mu_j \in C}(\parallel x_i - \mu_j \parallel^2)
+\]
 
-5. How do we plan to assess the suitablity of these parameters
+This makes the implicit assumption that the true clusters are both convex and isotropic (*i.e.* their boundaries can be defined by circles drawn around them). This means the k-means will not perform well when the data is non-convex, has anisotropic covariance, has spatially overlapping memberships, or contains outliers which artificially skew cluster means. There is no known evidence that that brain connectivity as represented in ${\rm I\!R}^n$ meets any of these assumptions.
 
 # Methods
 
@@ -39,5 +46,7 @@ knitr::opts_chunk$set(echo = TRUE)
 TBD
 
 # Discussion?
+
+# Referrences
 
 
