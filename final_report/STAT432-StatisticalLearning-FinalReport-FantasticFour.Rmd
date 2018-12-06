@@ -3,7 +3,7 @@ title: "Final Project"
 author: "Fantastic Four"
 date: "November 6, 2018"
 output:
-  html_document:
+  pdf_document:
     toc: true
 urlcolor: blue
 bibliography: bibliography.bib
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Abstract
 Mind wandering (a type of task unconstrained thought) is an important phenomenon that is presumed to occur during resting state imaging paradigms. Little is known about the temporal dynamics of these thoughts during the resting state, however the dynamics of brain connectivity which presumably represent such thoughts are beginning to be explored with dynamic connectivity in fMRI. Current techniques for classifying similarities of brain connectivity in this approach have not been evaluated for the meaningfulness of their classifications. This proposed study uses inferred cognitive states as the "true classification" of a given brain state allowing for testing of classification accuracy. Under the principled presumption that classification accuracy during task paradigms can provide an estimate of accuracy during rest paradigms we use two emotional processing tasks to evaluate these methods. Cognitive states are inferred by the stimuli being presented during two different block design tasks and metrics of psychopathology such as depression and anxiety. Modern clustering algorithms are tested as to whether they provide clusters that accurately overlap stimuli presentation during two block design tasks subject to potential covariance with measures of psychopathology symptoms.
 
-# Background
+# Introduction
 There is a wealth of evidence that when humans aren't engaged in any externally oriented task, they are consistently immersed in a phenomenon called mind-wandering (@binder1999conceptual,@buckner2008brain,@christoff2016mind,@mason2007wandering,@smallwood2015science). This is a type of unconstrained thought that may facilitate creativity and problem solving (@fox2015wandering), but in more maladaptive forms, may be repsonsible for the recurrence and maintenance of both depressive and anxious disorders (@teasdale1983negative,@burdwood2016resting,@nolen1991responses,@nolen2000role).
 
 *Dynamic connectivity* is comparitively recent development in functional neuroimaging analysis that shows immense promise towards understanding the role of mind-wandering in health and disease (@kucyi2014dynamic). For the interested reader, please refer to the original study proposal for a more comrehensive overview of the concepts involved in dynamic connectivity. Briefly, by calculating brain connectivity (*a.k.a* correlations of hemodynamic fluctuations across brain regions) on short time windows (on the order of seconds to minutes) rather than across an entire scan (which are on the order of 10 to 20 minutes), we can capture the temporal fluctuations of brain activity across a scan (@hutchison2013dynamic). These fluctations presumably reflect, in part, the fluctuations of the internal contents of thought.
@@ -32,7 +32,14 @@ K-means clustering however, will always produce clusters regardless of how well 
 
 This makes the implicit assumption that the true clusters are both convex and isotropic (*i.e.* their boundaries can be defined by circles drawn around them). This means the k-means will not perform well when the data is non-convex, has anisotropic covariance, has spatially overlapping memberships, or contains outliers which artificially skew cluster means. There is no known evidence that that brain connectivity as represented in ${\rm I\!R}^n$ meets any of these assumptions.
 
-# Methods
+The purpose of this study is to examine the suitability of k-means in real data. In order to test the accuracy of the clustering results two task-based paradigms are used in which the "true" classification of a brain state is assumed to be the stimuli presented at that time. See the original project proposal for a detailed exposition of the philosophical assumptions justifying this approach. This allows us to test the derived classification against the "true" labels. Two tasks within the same subject cohort are employed as a means to assess the robustness of k-means clustering across paradigms while controling for subject demographics. Each task was repeated across two scans within each subject (for a total of 4 scans per subject), which is leveraged to ensure algorithms are not fitting technological sources of variance such as magnetic gradient nonlinearities or subject head position induced distortions (@jovicich2006reliability) which may vary across scans. As an extension of this work, alternate classification approaches are explored for potential improvements to current dynamic connectivity analisys practice.
+
+Distribution of the raw data imaging data is restricted due to HIPPAA considerations, thus is not included in this report however all derived data, including timecourses used to produce the correlation matrices can be found at the [team's box account](heuristicwondering.com) for further inspection.
+
+## Detailed Description of Data Set
+### Participants
+The results reported here are based on a subset of women from a larger study examining the role of stress physiology in mother-infant interactions. They were primarily recruited from community agencies serving low-income women in a mid-size city of the Pacific Northwest. Twenty-five mothers agreed to participate in additional neuroimaging. A demographic summary of this subset is included in Table *include table here*. Mothers were selected for inclusion if *list inclusion criteria* were excluded from the larger study if *list exclusion criteria*. Inclusion in the neuroimaging portion was based on *how was this subset selected*. The study was a logitudinal design with mothers scanned at their first assessment 3-months postnatal, but returning for follow up assessments at 6, 12, and 18-months postnatal. Of the 25 original mothers, *num* returned for the 6-month assessment, *num* at 12-months, and *num* at 18-months. This dataset is also described in *cite all other papers for Levin data* @laurent2018mindfulness. Ethical approval for the study was obtained from *Oregon IRB* under approval number *num* and all participants gave written informed consent for themselves and their infants.
+
 
 1. Describe the data set
 
@@ -42,7 +49,7 @@ This makes the implicit assumption that the true clusters are both convex and is
 
 4. Describe the analysis
 
-# Results
+# Summary Statistics
 TBD
 
 # Discussion?

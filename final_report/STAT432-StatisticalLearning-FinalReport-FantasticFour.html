@@ -131,8 +131,7 @@ $(document).ready(function () {
 <ul>
 <li><a href="#abstract">Abstract</a></li>
 <li><a href="#background">Background</a></li>
-<li><a href="#methods">Methods</a></li>
-<li><a href="#results">Results</a></li>
+<li><a href="#summary-statistics">Summary Statistics</a></li>
 <li><a href="#discussion">Discussion?</a></li>
 <li><a href="#referrences">Referrences</a></li>
 </ul>
@@ -152,9 +151,7 @@ $(document).ready(function () {
 \sum_{i=0}^{n} \min_{\mu_j \in C}(\parallel x_i - \mu_j \parallel^2)
 \]</span></p>
 <p>This makes the implicit assumption that the true clusters are both convex and isotropic (<em>i.e.</em> their boundaries can be defined by circles drawn around them). This means the k-means will not perform well when the data is non-convex, has anisotropic covariance, has spatially overlapping memberships, or contains outliers which artificially skew cluster means. There is no known evidence that that brain connectivity as represented in <span class="math inline">\({\rm I\!R}^n\)</span> meets any of these assumptions.</p>
-</div>
-<div id="methods" class="section level1">
-<h1>Methods</h1>
+<p>The purpose of this study is to examine the suitability of k-means in real data. In order to test the accuracy of the clustering results task-based paradigms are used in which the “true” classification of a brain state is assumed to be the stimuli presented at that time. See the original project proposal for a detailed exposition of the philosophical assumptions justifying this approach. This allows us to test the derived classification against the “true” labels. As an extension of this work, alternate classification approaches are explored for potential improvements to current dynamic connectivity analisys practice.</p>
 <ol style="list-style-type: decimal">
 <li><p>Describe the data set</p></li>
 <li><p>Describe the preprocessing</p></li>
@@ -162,8 +159,8 @@ $(document).ready(function () {
 <li><p>Describe the analysis</p></li>
 </ol>
 </div>
-<div id="results" class="section level1">
-<h1>Results</h1>
+<div id="summary-statistics" class="section level1">
+<h1>Summary Statistics</h1>
 <p>TBD</p>
 </div>
 <div id="discussion" class="section level1">
