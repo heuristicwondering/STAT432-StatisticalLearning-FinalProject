@@ -1,0 +1,14 @@
+corr.array = vector()
+
+
+for (j in 1:96) {
+  mydata = read.csv(file = files[j])
+  stimuli = as.vector(unique(mydata[, 1]))
+  for (i in stimuli) {
+    
+    data = mydata[which(mydata[, 1] == i), ]
+    temp = as.vector(cor(data[, c(2:117)]))
+    corr.array=  rbind(corr.array, temp)
+    
+  }
+}
