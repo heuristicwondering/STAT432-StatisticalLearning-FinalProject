@@ -1,0 +1,74 @@
+```{r}
+#Storing File path and file name
+  files <- dir("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/Data/ROI_timecourses", recursive=TRUE, 
+             full.names=TRUE, pattern="\\.csv$")
+
+  filename = vector("character", length(files))
+  for (i in 1:length(files)) {
+    filename[i] = substr(files[i],89,130)
+  }
+
+
+
+#Getting rid of ISI in infants and outputting new csv for infants
+  setwd("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/Data/ROI_timecourses")  
+
+  play = dir("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/Data/ROI_timecourses", recursive=TRUE, 
+             full.names=TRUE, pattern="\\infant")
+  playname = vector("character", length(play))
+  for (i in 1:length(play)){
+    playname[i] = substr(play[i],89,130)
+  }
+  
+  for (i in 1:length(play)){
+    playdata = read.csv(file = play[i])
+    playdata = playdata[- grep("ISI", playdata$Stimuli),]
+    write.csv(playdata, playname[i], row.names = FALSE)
+    
+  }
+
+
+#Writing Correlation matrices
+setwd ("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/Data/Corr_Matrix")
+
+stim.mat = matrix()
+
+  for (j in 1:96) {
+    mydata = read.csv(file = files[j])
+    stimuli = as.vector(unique(mydata[, 1]))
+    for (i in stimuli) {
+      data = mydata[which(mydata[, 1] == i), ]
+      corr = cor(data[, c(2:117)])
+      temp = i
+      stim.mat = rbind(stim.mat, temp)
+      write.csv(corr , paste0(substr(filename[j], 1, 34), i, ".csv"))
+    }
+  }
+stim.mat = stim.mat[-1,]
+
+#converting corr matrices into one matrix
+corr.array = vector()
+
+
+for (j in 1:96) {
+  mydata = read.csv(file = files[j])
+  stimuli = as.vector(unique(mydata[, 1]))
+  for (i in stimuli) {
+    
+    data = mydata[which(mydata[, 1] == i), ]
+    temp = as.vector(cor(data[, c(2:117)]))
+    corr.array=  rbind(corr.array, temp)
+    
+  }
+}
+
+write.csv(corr.array, "corr.array.csv")
+dim(corr.array)
+
+#kmeans
+  k.max = 15
+  wss <- sapply(1:k.max,function(k){kmeans(corr.array, k, nstart=50,iter.max = 30 )$tot.withinss})
+  
+  plot(2:k.max, wss[2:15], type = "b", pch = 19)
+  
+```
