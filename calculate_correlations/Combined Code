@@ -65,10 +65,17 @@ for (j in 1:96) {
 write.csv(corr.array, "corr.array.csv")
 dim(corr.array)
 
+
+
 #kmeans
-  k.max = 15
-  wss <- sapply(1:k.max,function(k){kmeans(corr.array, k, nstart=50,iter.max = 30 )$tot.withinss})
+  #data = corr.array.stim.lab.csv located in box
+  k.max = 12
+  wss <- sapply(1:k.max,function(k){kmeans(data[,-c(1:2)], k, nstart=50,iter.max = 15 )$tot.withinss})
+  plot (1:k.max, wss, type = "b", pch = 19, frame = FALSE)
   
-  plot(2:k.max, wss[2:15], type = "b", pch = 19)
+  kmean.fit = kmeans(data[,-c(1:2)], centers = 10, iter.max = 30, nstart = 15)
+  confuse = table(data[,2], kmean.fit$cluster)
+  confuse
+  
   
 ```
