@@ -1,0 +1,96 @@
+---
+title: "Constructing the HRF"
+author: "Megan Finnegan"
+date: "December 11, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Because fMRI measures changes in *blood flow* rather than neural activity directly, there is slight delay from when a stimuli is presented to when we observe changes in a signal. This follows a charaterist pattern that is called the hemodynamic response.
+
+We can estimate this with a double gamma probability distribution if we set the parameters correctly. To make things a bit easier, will take advantage of a poorly documents and little known function in `FAIR` package with already has it's parameters set for the commonly accepted model.
+```{r demonstateHRF, warning=FALSE}
+# install.packages('FIAR') ## If needed
+library('FIAR')
+library(ggplot2)
+fir = c(1,rep(0,14))
+# Note that the data is assumed to be take every 1s. This was not listed in the documentation.
+hrf=hrfConvolve(fir) # some example data
+exmpl = data.frame(time=seq(0,14),hrf=hrf)
+ggplot(data=exmpl, aes(x=time,y=hrf))+
+  geom_line()
+```
+
+As we can see, the "repsonse" to a 1 second stimuli, peaks 5-6 seconds *after* the stimuli and doesn't return to baseline until almost 15 seconds after the onset. So to properly assign our labels so the are reflective of when the stimuli had its maximal impact on the recorded data, the labels have to be "shifted forward in time". To do this, we made a design matrix in which the presence of stimuli were represented with dummy variables, convolved it with the canonical hemodynamic response function to be reflective of it's relative contributions at various time points and take a simple maximum to determine what the "dominate"" stimuli was at a given time point and assign that label.
+
+```{r loaddata, warning=FALSE}
+# Loading data, dummy coding the stimuli into a design matrix
+ShiftVarNames <- function(stimuli){
+  # Creates the design matrix, shifts everything by the HRF, then assigns new labels
+  #
+  # Build design matrix
+  design = data.frame(matrix(0, nrow = length(stimuli), ncol = length(levels(stimuli))))
+  colnames(design) <- levels(stimuli)
+  for(s in levels(stimuli)){
+    design[which(stimuli == s),s] <- 1
+  }
+  
+  # Due to an undocument feature of the hrfConvolve function, when raw data is passed, 
+  # the assumed aqcuistion rate (TR) is 1 second. Since our data has TR =  2, expand 
+  # design matrix to account for this.
+  expandedDesign = rbind(design, design)
+  n = nrow(design); r <- rep(1:n, each = 2) + (0:1) * n
+  expandedDesign <- expandedDesign[r,]; rownames(expandedDesign) <- c(1:(n*2))
+  # Shift value in each column by the HRF
+  expandedDesign = apply(expandedDesign, MARGIN = 2, hrfConvolve)
+  # Down sampling - taking the value at the first second of onset as the instantaneous 
+  # value due to slice timing correction to the time point in preprocessing.
+  design <- expandedDesign[seq(1,n,2),]
+  
+  # Assigning indicator values to peaks
+  maxStim = apply(design, MARGIN = 1, max)
+  
+  # Although convolution may assign higher values to other stimuli, early time points 
+  # should have the label of the first stim presented until it reaches it's first peak
+  newStim = rep(stimuli[1], )
+} 
+
+split_path <- function(path) {
+    rev(setdiff(strsplit(path,"/|\\\\")[[1]], ""))
+}
+
+parentdir <- file.path('..','..','data','ROI_timecourses (With infant ISI removed)')
+childdirs = list.dirs(path = parentdir, full.names = TRUE, recursive = FALSE)
+
+newparentdir <- file.path('..','..','data','ROI_timecourses_wo-Inf-ISI_labels-shifted-by-HRF')
+dir.create(newparentdir)
+
+for(d in childdirs){
+  all.files <- list.files(d, rec=F)
+  all.files[!file.info(all.files)$isdir] # just in case someone put a directory in here
+  
+  for(f in all.files){
+    data = read.csv( file.path(d, f) )
+    stimuli = data[,1]
+    newStimuli = ShiftVarNames(stimuli)
+    data[,1] <- newStimuli
+    
+    
+    dataFldr = split_path(d)[1]
+    newDatadir = file.path(newparentdir, dataFldr)
+    dir.create(newDatadir)
+  }
+}
+
+```
+
+Convolving with a cananonical HRF
+```{r hrfdef}
+install.packages('FIAR')
+library('FIAR')
+
+hrfConvolve(x=grangerdata[1:100,1])
+plot(hrfConvolve(grangerdata[1:100,1]))
+```
