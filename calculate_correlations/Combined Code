@@ -68,14 +68,14 @@ dim(corr.array)
 
 
 #kmeans
-  #data = corr.array.stim.lab.csv located in https://uofi.box.com/s/m1fupaf25f6tf69c5f0phoqzmo7c1iqx
-
-  k.max = 15
-  wss <- sapply(2:k.max,function(k){kmeans(data[,-1], k, nstart=50,iter.max = 30 )$tot.withinss})
-  plot(2:k.max, wss[2:15], type = "b", pch = 19)
+  #data = corr.array.stim.lab.csv located in box
+  k.max = 12
+  wss <- sapply(1:k.max,function(k){kmeans(data[,-c(1:2)], k, nstart=50,iter.max = 15 )$tot.withinss})
+  plot (1:k.max, wss, type = "b", pch = 19, frame = FALSE)
   
-  kmean.fit = kmeans(data[,-1], center = 10, nstart = 15)
-  confuse = table(data[,1], kmean.fit$cluster)
+  kmean.fit = kmeans(data[,-c(1:2)], centers = 10, iter.max = 30, nstart = 15)
+  confuse = table(data[,2], kmean.fit$cluster)
   confuse
+  
   
 ```
