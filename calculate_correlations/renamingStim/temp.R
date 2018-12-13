@@ -1,32 +1,5 @@
----
-title: "Constructing the HRF"
-author: "Megan Finnegan"
-date: "December 11, 2018"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-Because fMRI measures changes in *blood flow* rather than neural activity directly, there is slight delay from when a stimuli is presented to when we observe changes in a signal. This follows a charaterist pattern that is called the hemodynamic response.
-
-We can estimate this with a double gamma probability distribution if we set the parameters correctly. To make things a bit easier, will take advantage of a poorly documents and little known function in `FAIR` package with already has it's parameters set for the commonly accepted model.
-```{r demonstateHRF, warning=FALSE}
-# install.packages('FIAR') ## If needed
 library('FIAR')
-library(ggplot2)
-fir = c(1,rep(0,14))
-# Note that the data is assumed to be take every 1s. This was not listed in the documentation.
-hrf=hrfConvolve(fir) # some example data
-exmpl = data.frame(time=seq(0,14),hrf=hrf)
-ggplot(data=exmpl, aes(x=time,y=hrf))+
-  geom_line()
-```
 
-As we can see, the "repsonse" to a 1 second stimuli, peaks 5-6 seconds *after* the stimuli and doesn't return to baseline until almost 15 seconds after the onset. So to properly assign our labels so they are reflective of when the stimuli had its maximal impact on the recorded data, the labels have to be "shifted forward in time". To do this, we made a design matrix in which the presence of stimuli were represented with dummy variables, convolved it with the canonical hemodynamic response function to be reflective of it's relative contributions at various time points and take a simple maximum to determine what the "dominate"" stimuli was at a given time point and assign that label.
-
-To start, we'll define a function to do the shifting...
-```{r hrfdef, warning=FALSE}
 ShiftVarNames <- function(stimuli){
   # Creates the design matrix, shifts everything by the HRF, then assigns new labels
   #
@@ -47,7 +20,7 @@ ShiftVarNames <- function(stimuli){
   expandedDesign = apply(expandedDesign, MARGIN = 2, hrfConvolve)
   # Down sampling - taking the value at the first second of onset as the instantaneous 
   # value due to slice timing correction to the time point in preprocessing.
-  design <- expandedDesign[seq(1,nrow(expandedDesign),2),]
+  design <- expandedDesign[seq(1,n,2),]
   
   # Reassigning stimuli labels according to what has the max value
   maxStimIndx = apply(design, MARGIN = 1, which.max)
@@ -59,14 +32,10 @@ ShiftVarNames <- function(stimuli){
   
   return(newStim)
   
-} 
+}
 
-```
-
-Then we'll call this function on all the "raw" ROI timecourses to give them new labels.
-```{r reassignLabels}
 split_path <- function(path) {
-    rev(setdiff(strsplit(path,"/|\\\\")[[1]], ""))
+  rev(setdiff(strsplit(path,"/|\\\\")[[1]], ""))
 }
 
 parentdir <- file.path('..','..','data','ROI_timecourses (With infant ISI removed)')
@@ -77,7 +46,7 @@ dir.create(newparentdir)
 
 for(d in childdirs){
   all.files <- list.files(d, rec=F)
-
+  
   for(f in all.files){
     data = read.csv( file.path(d, f) )
     stimuli = data[,1]
@@ -90,4 +59,3 @@ for(d in childdirs){
     write.csv(data, file = file.path(newDatadir, f), row.names=FALSE)
   }
 }
-```
