@@ -57,7 +57,9 @@ ShiftVarNames <- function(stimuli){
   firstStimIndx = which(newStim == stimuli[1])[1] # Index of first occurance of first stim
   newStim[1:firstStimIndx] <- levels(stimuli)[stimuli[1]]
   
-  return(newStim)
+  data = data.frame(newStim, design)
+  
+  return(data)
   
 } 
 
@@ -81,13 +83,21 @@ for(d in childdirs){
   for(f in all.files){
     data = read.csv( file.path(d, f) )
     stimuli = data[,1]
-    newStimuli = ShiftVarNames(stimuli)
+    newStimData = ShiftVarNames(stimuli)
+    newStimuli = newStimData$newStim
     data[,1] <- newStimuli
     
     dataFldr = split_path(d)[1]
     newDatadir = file.path(newparentdir, dataFldr)
     dir.create(newDatadir)
+    # Writing data with new stim labels
     write.csv(data, file = file.path(newDatadir, f), row.names=FALSE)
+    # Writing design matrix to file
+    nameparts = strsplit(f,'_')[[1]]
+    filename = paste(nameparts[1], nameparts[2], 
+                         nameparts[3], 'designMatrix.csv', sep='_')
+    write.csv(newStimData[,2:ncol(newStimData)], 
+              file = file.path(newDatadir, filename), row.names=FALSE )
   }
 }
 ```

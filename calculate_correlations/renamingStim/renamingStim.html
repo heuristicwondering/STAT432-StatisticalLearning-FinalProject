@@ -182,10 +182,15 @@ ggplot(data=exmpl, aes(x=time,y=hrf))+
   firstStimIndx = which(newStim == stimuli[1])[1] # Index of first occurance of first stim
   newStim[1:firstStimIndx] &lt;- levels(stimuli)[stimuli[1]]
   
-  return(newStim)
+  data = data.frame(newStim, design)
+  
+  return(data)
   
 } </code></pre>
 <p>Then we’ll call this function on all the “raw” ROI timecourses to give them new labels.</p>
+<pre class="r"><code># install.packages(&quot;stringi&quot;) # if needed
+library(&quot;stringi&quot;)</code></pre>
+<pre><code>## Warning: package 'stringi' was built under R version 3.5.1</code></pre>
 <pre class="r"><code>split_path &lt;- function(path) {
     rev(setdiff(strsplit(path,&quot;/|\\\\&quot;)[[1]], &quot;&quot;))
 }
@@ -202,19 +207,26 @@ for(d in childdirs){
   for(f in all.files){
     data = read.csv( file.path(d, f) )
     stimuli = data[,1]
-    newStimuli = ShiftVarNames(stimuli)
+    newStimData = ShiftVarNames(stimuli)
+    newStimuli = newStimData$newStim
     data[,1] &lt;- newStimuli
     
     dataFldr = split_path(d)[1]
     newDatadir = file.path(newparentdir, dataFldr)
     dir.create(newDatadir)
+    # Writing data with new stim labels
     write.csv(data, file = file.path(newDatadir, f), row.names=FALSE)
+    # Writing design matrix to file
+    nameparts = strsplit(f,'_')[[1]]
+    filename = paste(nameparts[1], nameparts[2], 
+                         nameparts[3], 'designMatrix.csv', sep='_')
+    write.csv(newStimData[,2:ncol(newStimData)], 
+              file = file.path(newDatadir, filename), row.names=FALSE )
   }
 }</code></pre>
 <pre><code>## Warning in dir.create(newDatadir): '..\..\data\ROI_timecourses_wo-Inf-
-## ISI_labels-shifted-by-HRF\112' already exists
-
-## Warning in dir.create(newDatadir): '..\..\data\ROI_timecourses_wo-Inf-
+## ISI_labels-shifted-by-HRF\112' already exists</code></pre>
+<pre><code>## Warning in dir.create(newDatadir): '..\..\data\ROI_timecourses_wo-Inf-
 ## ISI_labels-shifted-by-HRF\112' already exists
 
 ## Warning in dir.create(newDatadir): '..\..\data\ROI_timecourses_wo-Inf-

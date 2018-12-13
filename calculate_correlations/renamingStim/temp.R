@@ -20,7 +20,7 @@ ShiftVarNames <- function(stimuli){
   expandedDesign = apply(expandedDesign, MARGIN = 2, hrfConvolve)
   # Down sampling - taking the value at the first second of onset as the instantaneous 
   # value due to slice timing correction to the time point in preprocessing.
-  design <- expandedDesign[seq(1,n,2),]
+  design <- expandedDesign[seq(1,nrow(expandedDesign),2),]
   
   # Reassigning stimuli labels according to what has the max value
   maxStimIndx = apply(design, MARGIN = 1, which.max)

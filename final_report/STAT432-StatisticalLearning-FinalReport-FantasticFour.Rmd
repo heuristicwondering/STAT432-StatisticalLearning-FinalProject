@@ -45,21 +45,33 @@ Distribution of the raw data imaging data is restricted due to HIPPAA considerat
 
 ## Detailed Description of Data Set
 ### Participants
-The results reported here are based on a subset of women from a larger study examining the role of stress physiology in mother-infant interactions. They were primarily recruited from community agencies serving low-income women in a mid-size city of the Pacific Northwest. Twenty-five mothers agreed to participate in additional neuroimaging. A demographic summary of this subset is included in Table *include table here*. Mothers were selected for inclusion if *list inclusion criteria* were excluded from the larger study if *list exclusion criteria*. Inclusion in the neuroimaging portion was based on *how was this subset selected*. The study was a logitudinal design with mothers scanned at their first assessment 3-months postnatal, but returning for follow up assessments at 6, 12, and 18-months postnatal. Of the 25 original mothers, *num* returned for the 6-month assessment, *num* at 12-months, and *num* at 18-months. This dataset is also described in *cite all other papers for Levin data* @laurent2018mindfulness. Ethical approval for the study was obtained from *Oregon IRB* under approval number *num* and all participants gave written informed consent for themselves and their infants.
+The results reported here are based on a subset of women from a larger study examining the role of stress physiology in mother-infant interactions. They were primarily recruited from community agencies serving low-income women in a mid-size city of the Pacific Northwest. Twenty-five mothers with 3-month old infants agreed to participate in the additional neuroimaging reported here. Mean age for these mothers was $\mu = 26.4$ ($SD = 3.8$). Most identified as Caucasian (72\%), with 12\% reporting Latina ancestory, 8\% Asian American, and 8\% other. Eightyfour percent reported some education beyond high school, with 24\% having completed a college degree. No infants had serious health complications and the majority were born on time (4\% before 37 weeks and 8\% after 41 weeks gestation). This dataset is also described in @laurent2018mindfulness. Ethical approval for the study was obtained from University of Oregon Institutional Review Board and all mothers provided written informed consent.
 
+### Scan Paradigm
+Participant engaged in two separate tasks for this study, one involving infants expressing emotions and the other presenting emotionally expressive faces, however only the task observing infant emotional cues is reported here. The task was repeated across two scans. Scans were counter balanced across tasks to control for order effects and subjects were allowed to shift positions between scans in order to minimize discomfort related head movements. See Figure *** for an overview of both paradigms.
 
-1. Describe the data set
+#### Infant Viewing Task
+Mother's were instructed to "watch and respond as you would naturally" to videos of theirs or unknown others' infants expressing either positively or negatively valenced emotional cues. Emotional expressions in the infants were evoked during a video recording session occurring in a home setting. Positive valence expressions occurred during a peak-a-boo game played with the mother. Negative valence was induced by arm-restraint, a task known to evoke frustration response in infants (@moscardino2006infants). Each run lasted for approximately 7.5 minutes and consisted of alternating blocks of the infant emotion videos editted to be 15s in length.
 
-2. Describe the preprocessing
+#### Facial Viewing/Labelling Task
+A second task involved a well studied paradigm of emotion regulation in which mothers viewed emotionally expressive faces from the NimStim database (@tottenham2002categorization). Face images were race matched to the participants to take advatage of heightened neural responsiveness to in-group faces (@chiao2008cultural). Three second instructions appeared prior to each stimulis block with the words "Look" or "Label", in which participants either were to passively view or label the emotional content of the faces. Blocks consisted of 5 faces of a given positive/negative valence (*e.g.* happy, sad, angry, etc.) each presented for 5 seconds each. Blocks were separated by 1-3s of jittered rest condition. Each scan lasted for approximately 7.6 minutes.
 
-3. Describe the connectivity matrix creation
+```{r pressure, echo=FALSE, fig.cap="Schematic of the two tasks that produced the data. (A.) Mothers viewed either their own or others' infants displaying either positive (induced by playing peek-a-boo) or negative (induced by arm restraint) emotions. (B.) Mothers were instructed to either passively view or label the emotional content of humans faces.", out.width = '75%'}
+knitr::include_graphics("./images/scan-paradigm.jpg")
+```
 
-4. Describe the analysis
+<!-- -->
+1. Describe data paradigm
+2. Describe data acquisition
+3. Exploratory Data Analysis
+4. Planned Analysis
+ - Preprocessing --> Correlation
+ - k-means
+ - what else?
+5. Discussion
+6. Conclusion
+<!-- -->
 
-# Summary Statistics
-TBD
-
-# Discussion?
 
 
 # Appendix A.
