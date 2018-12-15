@@ -1,4 +1,0 @@
-  k.max = 15
-  wss <- sapply(1:k.max,function(k){kmeans(corr.array, k, nstart=50,iter.max = 30 )$tot.withinss})
-  
-  plot(2:k.max, wss[2:15], type = "b", pch = 19)
