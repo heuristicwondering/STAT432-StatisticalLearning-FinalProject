@@ -1,0 +1,20 @@
+#kmeans
+  #PCA and Kmean. Data should be the combined corr. matrix.
+
+  pc = prcomp(sapply(data[,-c(1:2)], as.numeric), center= TRUE)
+  plot(pc, type = "l")
+  comp = as.data.frame((pc$x[,1:3]))
+  
+  
+  #WSS -> elbow test for kmean from 1 to 12
+  k.max = 12
+  wss <- sapply(1:k.max,function(k){kmeans(pc$x[,1:3], k, nstart=50,iter.max = 15 )$tot.withinss})
+  plot (1:k.max, wss, type = "b", pch = 19, frame = FALSE)
+
+  
+  kmean.fit = kmeans(pc$x[,1:3], centers = 10, iter.max = 30, nstart = 2000)  
+  
+  library(rgl)
+  plot3d(comp$PC1, comp$PC2, comp$PC3, col = kmean.fit$cluster, size = 8)
+  plot(comp, col = kmean.fit$cluster, pch = 16)
+  
