@@ -14,7 +14,7 @@ csl: ieee-transactions-on-medical-imaging.csl
 knitr::opts_chunk$set(echo = TRUE, fig.height = 4)
 ```
 # Team Information
-**Team Members:** M.K. Finnegan$^1$, K. Bharadwaj; DH Hwang; R Dalmia
+**Team Members:** M.K. Finnegan$^1$, K. Anapindi; DH Hwang; R Dalmia
 
 &nbsp;&nbsp;&nbsp;&nbsp; 1. *Corresponding Author*
 
@@ -60,7 +60,7 @@ Mother's were instructed to "watch and respond as you would naturally" to videos
 #### Facial Viewing/Labelling Task
 A second task involved a well studied paradigm of emotion regulation in which mothers viewed emotionally expressive faces from the NimStim database (@tottenham2002categorization). Face images were race matched to the participants to take advatage of heightened neural responsiveness to in-group faces (@chiao2008cultural). Three second instructions appeared prior to each stimulis block with the words "Look" or "Label", in which participants either were to passively view or label the emotional content of the faces. Blocks consisted of 5 faces of a given positive/negative valence (*e.g.* happy, sad, angry, etc.) each presented for 5 seconds each. Blocks were separated by 1-3s of jittered rest condition. Each scan lasted for approximately 7.6 minutes.
 
-```{r pressure, echo=FALSE, fig.align="center", fig.cap="Schematic of the two tasks that produced the data. (A.) Mothers viewed either their own or others' infants displaying either positive (induced by playing peek-a-boo) or negative (induced by arm restraint) emotions. (B.) Mothers were instructed to either passively view or label the emotional content of humans faces."}
+```{r scanParadigm, echo=FALSE, fig.align="center", fig.cap="Schematic of the two tasks that produced the data. (A.) Mothers viewed either their own or others' infants displaying either positive (induced by playing peek-a-boo) or negative (induced by arm restraint) emotions. (B.) Mothers were instructed to either passively view or label the emotional content of humans faces."}
 knitr::include_graphics("./images/scan-paradigm.jpg")
 ```
 ### Scan Acquisition
@@ -85,13 +85,59 @@ Realignment consisted of a 2-pass procedure in which a mean image within a scan 
 Functional images were then co-registered to the high resolution structural image for each subject. This involves similar computations to the realignment step, however alignment occurs across scans. The anatomical images were then used to calculate non-linear deformations to warp the brain into the Montreal Neurologic Institute (MNI) standard stereotaxic space in a process known as normalization. The detailed deformation fields were then applied to the low resolution functional images. This process allows for voxel-by-voxel comparisons across subjects and is necessary to apply the region-of-interest masks needed to extract data for k-means. Given that fMRI typically has a relatively poor signal-to-noise ratio, all functional images were smoothed with an 8mm FWHM Gaussian smoothing kernel in order to compensate for spurious fluctuations.
 
 ## Voxelwise Analysis
-In order to confirm there was task correlated signal that could potentially drive clustering, a voxelwise level analysis was conducted to 
+In order to confirm there was task correlated signal that could potentially drive clustering, a voxelwise level analysis was conducted to identify the location of point sources of signal before collapsing into region-of-interest analyses. SPM12 was also used for this phase of data exploration. After preproccessing, a general linear model was calculated for each subject at each voxel using a design matrix consisting of several components. First the onset of predictors, but because fMRI measures changes in the ratios of oxygenated and de-oxygenated hemoglobin, there is a temporal delay between stimuli presentation and observed response. To account for this, these predictors were convolved with what is known as the *hemodynamic response function* which estimates this delayed response for an intantaneous stimuli. Next, the estimated motion realignment parameters to remove any remaining variance associated with head motion. Then a 6 predictor cosine basis set provided by the SPM12 software and used to account for scanner drift, in which the magnetic fields slowly occilate over time (which creates low-frequency occilations in the voxel intensity values), this essentially acts as a high-pass temporal filter set *a priori* at 128Hz.
 
--- voxelwise analysis
+Due to the relatively high amounts of motion discovered in this data, additional regressors were added to deweight an volumes exceeding 2mm of realignment. Data was pooled across scan types to reduces the number of individual models to estimate and dummy variables accounting for run were also used. Because of the large amounts of regressors, the design matrix was explored for colinearity using vector cosines, although there was some degree of collinearity, no regressors were flagged by SPM12 integrity checks for levels of dependence that would impeded estimation. Models were estimated using an implicit mask to resrict analysis only to voxels likely to be brain (determined by mean intensity across volumes), and thus reduce the problem of multiple comparisons in hypothesis testing. Only the regression coefficients associated with stimuli were explored for signicant differences.
+
+Contrasts were contructed for all pairwise contrast of regressors for every subject and t-values contructed using a fixed effects approach (the brain is the entire 'universe' of voxels). These statistics were used in a second group-level random effects analysis taken across subjects to explore signal across the entire dataset. Statistical correction for multiple comparisons was done in a heirarchical manner using the recommendations of (@eklund2016cluster) using a primary cluster-defining threshold of $p < .001$ uncorreted, and cluster selection with FWE-corrected cluster-level significance set at $p < .05$. The following table provides a summary of significant contrasts. The images that follow illustrate the extent of clusters discovered.
+
+```{r significantContrasts, echo=FALSE, fig.align="center", fig.cap="Voxelwise contrasts showing significant results"}
+knitr::include_graphics("./images/contrastResults.PNG")
+```
+
+<!-- INCLUDE LABELLED BRAIN IMAGES FOR A CONTRAST FROM EACH TASK HERE. -->
+
+As can be seen in the table, both tasks provide significant differences in voxel intensity values across tasks. Withing the infant task, there were significant differences in both directions across the Own/Other and Pos/Neg distinction. Within a mother's own infant, there did appear to be a consistent directional effect of valence across all voxels and similarly between both valence conditions and fixation. Although both tasks contain task-meaningful signal, the infant task produced less extensive differences as is illustrated in smaller clusters evident in the infant contrast images shown.
+
+
+## ROI analysis
+Because the intended targets of clustering are not voxels themselves, but rather the correlations of anatomically defined voxel averages, we also explored how much of this task-dependent signal was preserved after voxel averaging. This is known as a region-of-interest (ROI) analysis. Regions of contiguous voxels were defined by referrence to the Automated Anatomically Labelled Atlas (@tzourio2002automated) and the MarsBar toolbox addition for SPM (@brett2002region). Mean intesity values were extracted for all defined regions, for all time points and for all subjects. All subsequent analyses reported here were conducted and visualized in `R`.
+
+### Linear Regression
+Linear regression was again used to assess for 
+
+
+
 -- linear regression
 
 <!-- -->
 3. Exploratory Data Analysis
+
+## @Megan about the fmri images and brain connectivity plots based on stimuli
+
+
+## Description for the voxel intensity vs anatomical region of interest
+For a preliminary analysis regarding the correlation between the voxel intensity and the stimulus, we averaged the intensities for each region over all the stimuli and plotted the average intensity vs. the anatomical brain region of interest. This stacked area graph represents all the five different stimuli, with ISI being the baseline. The other 4 stimili (EmoLabelPos, EmoLabelNeg, EmoLookPos, EmoLookNeg) are stacked on top of it. From this graph, we can visualize whether the brain activity in a partcular region changes w.r.t. the stimuli or if the activity remains constant irrespective of the stimuli. From this graph, we did observe abrupt changes in the mean voxel intensity for certain regions (depicted by the step like pattern towards the top right) w.r.t to the control ISI intensity. This tells us that the vexel intensities do capture the brain changes in intensity w.r.t the stimuli.
+
+
+## t-test to find if the left and right anatomical hemispheres are actiavted equally 
+
+One of the goals of this study was to see whether both the left and right hemispheres of the brain are involved to the same extent in responding towards a stimulus. Brain laterality refers to the fact that certain neural functions and cognitive processes are exclusively processed by one side of the brain. We wanted to see if the brain regions that we were looking for also followed this paradigm or if there was no laterality in the data. To test this assumption, we performed an paired, 2 -tail t-test for all the regions of a given stimulus between the left and right brain regions. Before performing the t-test, we tested for the distribution of the data to ensure that all the necessary conditions to perform the hypothesis test are met. 
+
+## Here goes the density distribution graph.
+
+
+The results that we got from the t-test were quite interesting. After accounting for the multiple testing correction (Benjamini Hochberg), it turned out that almost every single region of interest actually had a significantly different (p<0.05) mean voxel intensity between the left and the right regions. 
+
+##More interpretation from Megan.
+
+
+##Box plot from of the voxel intensity for each of the stimulus tested.
+
+Another aspect of the data that we were interested in was to characterize the inter-region variability vs. the inter-stimulus variability of the voxel intensity. Based on the representative box-whisker plot (##attached below), it is evident that the inter-region variability is much higher compared to the inter-stimulus variability. This is because:---##Megan please add
+
+
+
 4. Planned Analysis
  - Preprocessing --> Correlation
  - k-means
