@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Because fMRI measures changes in *blood flow* rather than neural activity directly, there is slight delay from when a stimuli is presented to when we observe changes in a signal. This follows a charaterist pattern that is called the hemodynamic response.
 
 We can estimate this with a double gamma probability distribution if we set the parameters correctly. To make things a bit easier, will take advantage of a poorly documents and little known function in `FAIR` package with already has it's parameters set for the commonly accepted model.
+
 ```{r demonstateHRF, warning=FALSE}
 # install.packages('FIAR') ## If needed
 library('FIAR')
