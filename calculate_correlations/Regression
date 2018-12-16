@@ -1,0 +1,84 @@
+```{r}  
+  #Regression
+
+
+  design.file.dir = dir ("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/ROI_timecourses_wo-Inf-ISI_labels-shifted-by-HRF",
+                         recursive = TRUE,
+                         full.names = TRUE,
+                         pattern = "_infant_2_designMatrix.csv")
+  
+    
+  design.list = list()
+    for (i in 1:length(design.file.dir)){
+      temp3 <- as.matrix(read.csv(design.file.dir[i]))
+      basis = matrix (nrow = nrow(temp3), ncol = 4)
+      colnames(basis) = c("t1","t2", "t3", "t4")
+      for (j in 1:4)
+      { 
+        basis[,j] = sapply(1:nrow(basis), function(x){sin(pi*x/12)})
+      }
+    design.list[[i]] <- cbind(temp3, basis)
+    }
+
+  design.comb = matrix (ncol = 9)
+  
+  for (i in 1:length(design.file.dir))
+  {
+    design.comb = rbind(design.comb, design.list[[i]])
+  }
+
+  head(design.comb)
+  design.comb = design.comb[-1,]
+  
+  
+  empty = matrix(0,nrow = nrow(design.comb), ncol = length(design.file.dir))
+  troubleshoot = matrix(nrow= 24,ncol = 3)
+  
+  rs = 1
+  for (i in 1:length(design.file.dir))
+  {
+    re = rs+ nrow(design.list[[i]])-1
+  
+    #print(i)
+    #print(re)
+    #print(rs)
+    
+    empty[rs:re, i] = 1
+    rs = re + 1
+  }
+  
+  design.comb = cbind(design.comb, empty)
+  
+  #combining ROI for response
+  
+    roi.file.dir = dir ("C:/Users/dohyu/Google Drive/Class/Stats 432/Project/playground/ROI_timecourses_wo-Inf-ISI_labels-shifted-by-HRF",
+                         recursive = TRUE,
+                         full.names = TRUE,
+                         pattern = "_infant_2_AALROImeanTimeCourses.csv")
+    
+
+    temp4 = matrix(nrow = 1,ncol = 117)
+    temp5 = matrix()
+    
+    for (i in 1:length(roi.file.dir))
+    {
+      temp5 = read.csv(roi.file.dir[i])
+      temp5 = temp5[,1:117]
+      colnames(temp4) = colnames(temp5)
+      temp4 = rbind(temp4, temp5)
+    }
+    roi.comb = temp4[-1,]
+    
+    mod.list = list()
+    
+    for (i in 2:ncol(roi.comb))
+    {
+      mod.list[[i]] = lm(roi.comb[,i] ~ design.comb)
+      print(i)
+      print(which(summary(mod.list[[i]])$coef[2:6,4] <= .05))
+      
+    }
+      
+  
+
+```
