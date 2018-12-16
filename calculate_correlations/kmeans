@@ -1,7 +1,7 @@
 #kmeans
   #PCA and Kmean. Data should be the combined corr. matrix.
 
-  pc = prcomp(sapply(data[,-c(1:2)], as.numeric), center= TRUE)
+  pc = prcomp(sapply(data[,-1], as.numeric), center= TRUE)
   plot(pc, type = "l")
   comp = as.data.frame((pc$x[,1:3]))
   
