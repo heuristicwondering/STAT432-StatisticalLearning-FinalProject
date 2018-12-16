@@ -52,13 +52,13 @@ Distribution of the raw data imaging data is restricted due to HIPPAA considerat
 The results reported here are based on a subset of women from a larger study examining the role of stress physiology in mother-infant interactions. They were primarily recruited from community agencies serving low-income women in a mid-size city of the Pacific Northwest. Twenty-five mothers with 3-month old infants agreed to participate in the additional neuroimaging reported here. Mean age for these mothers was $\mu = 26.4$ ($SD = 3.8$). Most identified as Caucasian (72\%), with 12\% reporting Latina ancestory, 8\% Asian American, and 8\% other. Eightyfour percent reported some education beyond high school, with 24\% having completed a college degree. No infants had serious health complications and the majority were born on time (4\% before 37 weeks and 8\% after 41 weeks gestation). This dataset is also described in @laurent2018mindfulness. Ethical approval for the study was obtained from University of Oregon Institutional Review Board and all mothers provided written informed consent.
 
 ### Scan Paradigm
-Participant engaged in two separate tasks for this study, one involving infants expressing emotions and the other presenting emotionally expressive faces, however only the task observing infant emotional cues is reported here. The task was repeated across two scans. Scans were counter balanced across tasks to control for order effects and subjects were allowed to shift positions between scans in order to minimize discomfort related head movements. See Figure *** for an overview of both paradigms.
+Participant engaged in two separate tasks for this study, one involving infants expressing emotions and the other presenting emotionally expressive faces, however only the task observing infant emotional cues is reported here. The task was repeated across two scans. Scans were counter balanced across tasks to control for order effects and subjects were allowed to shift positions between scans in order to minimize discomfort related head movements. See Figure 1 for an overview of both paradigms.
 
 #### Infant Viewing Task
 Mother's were instructed to "watch and respond as you would naturally" to videos of theirs or unknown others' infants expressing either positively or negatively valenced emotional cues. Emotional expressions in the infants were evoked during a video recording session occurring in a home setting. Positive valence expressions occurred during a peak-a-boo game played with the mother. Negative valence was induced by arm-restraint, a task known to evoke frustration response in infants (@moscardino2006infants). Each run lasted for approximately 7.5 minutes and consisted of alternating blocks of the infant emotion videos editted to be 15s in length.
 
 #### Facial Viewing/Labelling Task
-A second task involved a well studied paradigm of emotion regulation in which mothers viewed emotionally expressive faces from the NimStim database (@tottenham2002categorization). Face images were race matched to the participants to take advatage of heightened neural responsiveness to in-group faces (@chiao2008cultural). Three second instructions appeared prior to each stimulis block with the words "Look" or "Label", in which participants either were to passively view or label the emotional content of the faces. Blocks consisted of 5 faces of a given positive/negative valence (*e.g.* happy, sad, angry, etc.) each presented for 5 seconds each. Blocks were separated by 1-3s of jittered rest condition. Each scan lasted for approximately 7.6 minutes.
+A second task involved a well studied paradigm of emotion regulation in which mothers viewed emotionally expressive faces from the NimStim database (@tottenham2002categorization). Face images were race matched to the participants to take advatage of heightened neural responsiveness to in-group faces (@chiao2008cultural). Three second instructions appeared prior to each stimulis block with the words "Look" or "Label", in which participants either were to passively view or label the emotional content of the faces. Blocks consisted of 5 faces of a given positive/negative valence (*e.g.* happy, sad, angry, etc.) each presented for 5 seconds each. Blocks were separated by 1-3s of jittered rest condition (alternately referred to as either "fixation" or "ISI", short for interstimulus interval). Each scan lasted for approximately 7.6 minutes.
 
 ```{r scanParadigm, echo=FALSE, fig.align="center", fig.cap="Schematic of the two tasks that produced the data. (A.) Mothers viewed either their own or others' infants displaying either positive (induced by playing peek-a-boo) or negative (induced by arm restraint) emotions. (B.) Mothers were instructed to either passively view or label the emotional content of humans faces."}
 knitr::include_graphics("./images/scan-paradigm.jpg")
@@ -95,60 +95,197 @@ Contrasts were contructed for all pairwise contrast of regressors for every subj
 knitr::include_graphics("./images/contrastResults.PNG")
 ```
 
-```{r connImages, echo=FALSE, fig.align="center", fig.cap="Voxelwise contrasts showing significant results"}
+```{r connImages, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Result images of selected voxelwise contrasts"}
 knitr::include_graphics("./images/bothContrastImages.jpg")
 ```
 
 As can be seen in the table, both tasks provide significant differences in voxel intensity values across tasks. Withing the infant task, there were significant differences in both directions across the Own/Other and Pos/Neg distinction. Within a mother's own infant, there did appear to be a consistent directional effect of valence across all voxels and similarly between both valence conditions and fixation. Although both tasks contain task-meaningful signal, the infant task produced less extensive differences as is illustrated in smaller clusters evident in the infant contrast images shown.
 
-
 ## ROI analysis
 Because the intended targets of clustering are not voxels themselves, but rather the correlations of anatomically defined voxel averages, we also explored how much of this task-dependent signal was preserved after voxel averaging. This is known as a region-of-interest (ROI) analysis. Regions of contiguous voxels were defined by referrence to the Automated Anatomically Labelled Atlas (@tzourio2002automated) and the MarsBar toolbox addition for SPM (@brett2002region). Mean intesity values were extracted for all defined regions, for all time points and for all subjects. All subsequent analyses reported here were conducted and visualized in `R`.
 
 ### Linear Regression
-Linear regression was again used to assess for 
+Linear regression was again used to assess for assessing the strength of the relationship between task and signal, however several using a simplified regression model. Stimuli regressors convolved with the hemodynamic response function were still used, however we estimate this with the `hrfConvolve` function in the `FAIR` package. The HRF is implemented as a a double gamma probability distribution parameters set for the commonly accepted model. A demonstration of this model on a finite impulse response shows the classic shape of the HRF that emerges.
+
+```{r demonstateHRF, warning=FALSE, fig.width=4, fig.height=3,fig.align='center', message=FALSE}
+# install.packages('FIAR') ## If needed
+library('FIAR')
+library(ggplot2)
+fir = c(1,rep(0,14))
+# Note that the data is assumed to be take every 1s. 
+# This was not listed in the documentation.
+hrf=hrfConvolve(fir) # some example data
+exmpl = data.frame(time=seq(0,14),hrf=hrf)
+ggplot(data=exmpl, aes(x=time,y=hrf))+
+  geom_line()
+```
+
+Unfortunarely, R has not been extensively used for brain image analysis and there are very few resources for MRI-specific analysis. This is a poorly documented function and the package itself is still not fully tested, so results of this analysis should be seen as highly tentative. To simplify calculations, bulk head movement and volume deweighting was not included, but a 4 regressor cosine basis was included. All subjects were included in a single linear model with regressors of indicator variables for each (n=24) subject and the first or second run within subjects (s=2). 
+
+```{r lmSummary, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Summary of regression modelling in the Infant Task"}
+knitr::include_graphics("./images/Regression summary picture.JPG")
+```
+As can be seen in this representative linear model summary of the left caudate (Figure 4), several predictors and in particular fixation, InfOtherPos, and InfOwnNeg all significantly predicted ROI intensity values. This was consistent across most ROIs, although different combinations of predictors reached significance depending on the particular region. This left us with confidence that task correlated signal at the voxel level was indeed preserved through the smoothing process.
+
+## Visual Comparison of ROI Intensities
+Given the discrepant findings between the relevance of task at the voxel and the ROI level, we plotted the average intensity vs. the anatomical brain region of interest for visual inspection. This stacked area graph represents all the five different stimuli, with ISI being the baseline. The other 4 stimili (EmoLabelPos, EmoLabelNeg, EmoLookPos, EmoLookNeg) are stacked on top of it. From this graph, we can visualize whether the brain activity in a partcular region changes w.r.t. the stimuli or if the activity remains constant irrespective of the stimuli. From this graph, we did observe abrupt changes in the mean voxel intensity for certain regions (depicted by the step like pattern towards the top right) w.r.t to the control ISI intensity. This tells us that the voxell intensities do capture the brain changes in intensity w.r.t the stimuli and although this may not be apparent within individual ROIs, is still reasonable to expect to be represented in the correlation matrices that reflect between ROI coordination.
+
+<!--- What code snippets to put here? --->
+
+```{r stackedGraph, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Stacked graph of ROI intensity across regions"}
+knitr::include_graphics("./images/avgvoxel.png")
+```
 
 
+## Exploration of Laterality
+This cohort was relatively high in depression symptoms with 9 out of 24 mothers meeting criteria for past or current depressive episodes or diagnosis. Depression is a very common postpartum complication (@pearlstein2009postpartum) with devasting consequences for both mother and infant (@lovejoy2000maternal,@stein2014effects,@gelaye2016epidemiology) and is 2nd leading cause of death (via suicide) for mothers in the first year of the infant's life (@wisner2013onset). It also has been known in neuroscience for a very long time that the brain exhibits a laterality in depression (@henriques1990regional) typified by persistent left frontal and right parietal hypoactivation (@demaree2005brain). To detect the presense of laterality between left-right homologous ROIs, we performed an paired, 2 -tail t-test for all the regions of a given stimulus between the left and right brain regions. Before performing the t-test, we tested for the distribution of the data (See Figure 6.) to ensure that all the necessary conditions to perform the hypothesis test are met.
 
--- linear regression
+```{r densityPlots, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Density distributions of select ROIs"}
+knitr::include_graphics("./images/data_density.png")
+```
+The results that we got from the t-test were quite interesting. After accounting for the multiple testing correction (Benjamini Hochberg), it turned out that almost every single region of interest actually had a significantly different (p<0.05) mean voxel intensity between the left and the right regions. It is unclear how much of this laterality difference may be driving the results presented below, but should be noted that this raises the ponential of implicit markers of psychopathology skewing results.
 
-<!-- -->
-3. Exploratory Data Analysis
+## Region Intensity Across Stimuli
+A final aspect of the data that we wished to characterize was the inter-region variability vs. the inter-stimulus variability of the voxel intensity. A box-whisker plot (Figure 7) of representative regions was created to visually inspect this relationship. Regions from the boundaries of the field-of-view were excluded from these plots as they tend to have artificially low intensity values due to signal dropout near the edges of the shimming region. Based this plot, it is evident that the inter-region variability is much higher compared to the inter-stimulus variability. 
 
-## @Megan about the fmri images and brain connectivity plots based on stimuli
+```{r boxPlots, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Box-whisker plots of select ROIs across stimulus type"}
+knitr::include_graphics("./images/boxplot.png")
+```
 
-
-## Description for the voxel intensity vs anatomical region of interest
-For a preliminary analysis regarding the correlation between the voxel intensity and the stimulus, we averaged the intensities for each region over all the stimuli and plotted the average intensity vs. the anatomical brain region of interest. This stacked area graph represents all the five different stimuli, with ISI being the baseline. The other 4 stimili (EmoLabelPos, EmoLabelNeg, EmoLookPos, EmoLookNeg) are stacked on top of it. From this graph, we can visualize whether the brain activity in a partcular region changes w.r.t. the stimuli or if the activity remains constant irrespective of the stimuli. From this graph, we did observe abrupt changes in the mean voxel intensity for certain regions (depicted by the step like pattern towards the top right) w.r.t to the control ISI intensity. This tells us that the vexel intensities do capture the brain changes in intensity w.r.t the stimuli.
-
-
-## t-test to find if the left and right anatomical hemispheres are actiavted equally 
-
-One of the goals of this study was to see whether both the left and right hemispheres of the brain are involved to the same extent in responding towards a stimulus. Brain laterality refers to the fact that certain neural functions and cognitive processes are exclusively processed by one side of the brain. We wanted to see if the brain regions that we were looking for also followed this paradigm or if there was no laterality in the data. To test this assumption, we performed an paired, 2 -tail t-test for all the regions of a given stimulus between the left and right brain regions. Before performing the t-test, we tested for the distribution of the data to ensure that all the necessary conditions to perform the hypothesis test are met. 
-
-## Here goes the density distribution graph.
+This result discouraged us from pursuing a clustering based on regional intensity values (as opposed to the correlations across regions), because there did not seem to be sufficient separation across tasks within any regions to warrent the computational expense. This is however, left as an avenue of future exploration.
 
 
-The results that we got from the t-test were quite interesting. After accounting for the multiple testing correction (Benjamini Hochberg), it turned out that almost every single region of interest actually had a significantly different (p<0.05) mean voxel intensity between the left and the right regions. 
+# Planned Analysis
+## Construction of Correlation Matrices
+The impetus for this project is to assess the accuracy of k-means clustering when (under the philosophical assumptions in Appendix A) the "true" label of the brain states are known. To be reflective of the broader literature, brain states were conceptualized as connectivity and thus correlation matrices of ROI timecourses were constructed. The planned method was originally to use a sliding window approach to extract correlation matrices representative of the stimuli being presented, but it was later discovered that the timing of the stimuli did not provide wide enough windows for this approach to be feasible. A modified version was implemented in which stimuli labels were shifted forward in time to be representative of when they were contributing the most to the hemodynamic response. This was accomplished by creating indicator variables of the the time points in which stimuli were presented, $I(s,t) = 1, 0\:o.w.$. These were then convolved with the hemodynamic response function to produce the design matrices used in the exploratory linear regression. The code used to generate these shifts and matrices is outlined below.
 
-##More interpretation from Megan.
+```{r hrfShift, eval=FALSE, warning=FALSE}
+ShiftVarNames <- function(stimuli){
+  # Creates the design matrix, shifts everything by the HRF, then assigns new labels
+  # Build design matrix
+  design = data.frame(matrix(0, nrow = length(stimuli), ncol = length(levels(stimuli))))
+  colnames(design) <- levels(stimuli)
+  for(s in levels(stimuli)){
+    design[which(stimuli == s),s] <- 1
+  }
+  
+  # Due to an undocument feature of the hrfConvolve function, when raw data is passed, 
+  # the assumed aqcuistion rate (TR) is 1 second. Since our data has TR =  2, expand 
+  # design matrix to account for this.
+  expandedDesign = rbind(design, design)
+  n = nrow(design); r <- rep(1:n, each = 2) + (0:1) * n
+  expandedDesign <- expandedDesign[r,]; rownames(expandedDesign) <- c(1:(n*2))
+  # Shift value in each column by the HRF
+  expandedDesign = apply(expandedDesign, MARGIN = 2, hrfConvolve)
+  # Down sampling - taking the value at the first second of onset as the instantaneous 
+  # value due to slice timing correction to the time point in preprocessing.
+  design <- expandedDesign[seq(1,nrow(expandedDesign),2),]
+  
+  # Reassigning stimuli labels according to what has the max value
+  maxStimIndx = apply(design, MARGIN = 1, which.max)
+  newStim = levels(stimuli)[maxStimIndx]
+  # Although convolution may assign higher values to other stimuli, early time points 
+  # should have the label of the first stim presented until it reaches it's first peak
+  firstStimIndx = which(newStim == stimuli[1])[1] # Index of first occurance of first stim
+  newStim[1:firstStimIndx] <- levels(stimuli)[stimuli[1]]
+  
+  data = data.frame(newStim, design)
+  
+  return(data)
+  
+}
+
+# Needed to generate correlation matrices
+for (j in 1:96) {
+  mydata = read.csv(file = files[j])
+  stimuli = as.vector(unique(mydata[, 1]))
+  for (i in stimuli) {
+    data = mydata[which(mydata[, 1] == i), ]
+    corr = cor(data[, c(2:117)])
+    write.csv(corr , paste0(substr(filename[j], 1, 34), i, ".csv"))
+  }
+}
+```
+
+The stimuli with the max value at a given time point was taken as the singular stimuli contributing it's effects. We recognize this presents a potential flaw in that we are not considering the full scope of stimuli impinging on brain activity, but this simplification led to more interpretability of results and is pointed to as an area in need of future development.
+
+To create stimuli representative matrices, time points belonging to a given stimuli class (*e.g.* InfOwnPos, EmoLookNeg, ...) were serially concatentated to provide a composite timecourse of all neural contributions from the stimuli and a Pearson's correlation calculated across regions to produce a connectivity graph. An example of one such matrix is highlighted in the accompanying figure. These matrices were then subjected to several different clustering approaches to examine which if any are suitable for use in brain clustering analyses.
+
+```{r heatmap, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Heatmap for an example subject's connectivity matrix of EmoLabelNeg"}
+knitr::include_graphics("./images/Heatplot for Correlation.png")
+```
+
+## K-Means Clustering
+This project examined 3 alternate approaches to k-means clustering. The firt two are represented in the literature and the third represented a novel approach. It should be noted that all three approaches calculate distance in terms of $L_2$-norms, but the data is transformed into different domains to explore the informativeness of both local and global properties of the brain. All stimuli matrices
+
+### Clustering on Raw Correlation Matrices
+First clustering performance was assessed in the untouched correlation matrices. This is perhaps one of the most well represented techniques in dynamic connectivity. Although we had *a priori* reasons for suspecting certain numbers of cluster to emerge aligning with our main stimuli grouping (valence, own/other, and fixation). We chose a na&iuml;ve approach to cluster selection and examined the within-cluster (WC) distance of a range of cluster numbers in order to determine the optimal number via the elbow method. The WC distance was determined under 50 random restarts in order to protect again the effects of initial cluster assignment and the final cluster under 2,000 restarts.
+
+```{r kmeans, eval=FALSE}
+k.max = 15
+wss <- sapply(1:k.max,function(k){kmeans(corr.array, k, nstart=50,iter.max = 30 )$tot.withinss})
+  
+plot(2:k.max, wss[2:15], type = "b", pch = 19)
+```
+
+%```{r wcDistance, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Within-Cluster Distance of different amounts of %clusters"}
+%knitr::include_graphics("./images/Heatplot for Correlation.png")
+%```
+
+As is evident in the plot, there does not seem to be a well defined elbow but beyond 4 clusters, there was an undeniable linear trend, so 4 was chosen by consenus. When examine the confusion matrix, it was clear that there was some limited success in accurately sorting connectivity matrics, but it largely preformed quite poorly.
+
+### Clustering on Principle Components
+Because connectivity matrices represent the information from 116 anatomical regions, it represent extremely high dimensional data. Dimensions that don't provide much meaningful variance may be impeding accurate classification. To test this hypothesis, we applied principle component analysis to each matrix and extracted the 3 largest principle components to perform clustering on. See the following figures for a summary of this process.
+
+```{r wcDistance, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Amount of variance explained by top principle components"}
+knitr::include_graphics("./images/PC_varExplained.png")
+```
+
+As this PC variance plot shows, the first component carries the largest amount of variance. This large weight on the first component may be driven by collinearity among regions which is to be expected to some degree. Still, some variance was captured in smaller components. For ease of visualization 3 components were chosen for clustering variables.
+
+```{r PCelbow, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Elbow plot of PC clustering"}
+knitr::include_graphics("./images/PC_elbowplot.png")
+```
+Again, just as in the untouched correlation matrices, there was no clear elbow to guide choice of numbers of clusters but it appeared that 4 would be a reasonable choice.
+
+```{r PCelbow, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Elbow plot of PC clustering"}
+knitr::include_graphics("./images/PC_elbowplot.png")
+```
+
+Plots of the cluster assignment were dubious. Although they seemed to make clean divisions along the PC dimensions, there did not appear to be any natural grouping of the data to drive this results and it was suspected that large amounts of this may be spurious.
+```{r PCclustering, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Plots of Principle Component and Cluster Assignment"}
+knitr::include_graphics("./images/PC_clustering.jpg")
+```
+
+However, on closer inspection, there did appear to be some slight natural grouping of the data in terms of cluster assignment seemingly falling along rough heteroskedasctic levels along the first principle component. This was very interesting because it was suggestive of the thought that variability in connectivity might have an important role in distinguishing brain states.
+```{r PCplots, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Plots of Principle Component Values"}
+knitr::include_graphics("./images/PC_plots.png")
+```
+
+But the clean cut separation of connectivity states translated only marginally in terms of it's accuracy in representing mental states. There appeared to be a high amount representation of InfOtherNeg in cluster 1, cluster 2 had no clearcut grouping, cluster 3 perhaps had a slight over representation of passive viewing, and again cluster 4 had no clear groupings. This leaves room for much susicion in the inferences neuroscientists are currently drawing on these techniques.
+```{r PCconfusion, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Confusion Matrix PC Components"}
+knitr::include_graphics("./images/PC_confusionMatrix.jpg")
+```
 
 
-##Box plot from of the voxel intensity for each of the stimulus tested.
+<!--- What code snippets to put here? --->
 
-Another aspect of the data that we were interested in was to characterize the inter-region variability vs. the inter-stimulus variability of the voxel intensity. Based on the representative box-whisker plot (##attached below), it is evident that the inter-region variability is much higher compared to the inter-stimulus variability. This is because:---##Megan please add
-
-
-
-4. Planned Analysis
- - Preprocessing --> Correlation
- - k-means
- - what else?
-5. Discussion
-6. Conclusion
-<!-- -->
+### Clustering on Graph Metrics
+The preceeding clustering approaches relied on local differences in neural coordination. However, it is well known that the brain exhibits global properties that are important for cognition (@bertolero2015modular). Therefore we attempted to cluster matrices on two widely used graph metrics in neuroscience, rich club structure 
+<!--- What code snippets to put here? --->
 
 
+Although it was planned to make quantitative assessments of purity post-clustering, given the consistently poor clustering results across all approaches, this did not seem needed until more accurate approaches to brain network clustering are devised. Hence we deviate from our proposal to only provide qualitative assessment of clustering accuracy.
+
+# Alternate Classification Approaches
+Beyond k-means other algorithms were tested to see if they might be able to surpass the current best performance. Both Support Vector Machines applied to the correlation matrices pre-stimuli reassignment, and random forests post-reassignment showed results that seemed little better than random assignment. Thus they are not reported in full here, but mentioned as algorithms that do not seem appropriate for brain network clustering.
+## SVM
+## Random Forests
+
+<!--- What code snippets to put here? --->
+ 
+# Discussion
+<!-- What are the big takeaways here? What worked? What failed especially well? What are the recommendations for researchers trying to choose a clustering algorithm? What are the limitations of this work? What are the future directions? -->
 
 # Appendix A.
 
