@@ -232,60 +232,144 @@ plot(2:k.max, wss[2:15], type = "b", pch = 19)
 %knitr::include_graphics("./images/Heatplot for Correlation.png")
 %```
 
-As is evident in the plot, there does not seem to be a well defined elbow but beyond 4 clusters, there was an undeniable linear trend, so 4 was chosen by consenus. When examine the confusion matrix, it was clear that there was some limited success in accurately sorting connectivity matrics, but it largely preformed quite poorly.
+
+There did not seem to be a well defined elbow (similar to the plot displayed for PCA) but beyond 4 clusters, there was seeming linear trend, so 4 was chosen by consenus. When examining the confusion matrix, it was clear that there was some limited success in accurately sorting connectivity matrics, but it largely preformed quite poorly.
 
 ### Clustering on Principle Components
 Because connectivity matrices represent the information from 116 anatomical regions, it represent extremely high dimensional data. Dimensions that don't provide much meaningful variance may be impeding accurate classification. To test this hypothesis, we applied principle component analysis to each matrix and extracted the 3 largest principle components to perform clustering on. See the following figures for a summary of this process.
 
-```{r wcDistance, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Amount of variance explained by top principle components"}
+```{r wcDistance, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Amount of variance explained by top principle components"}
 knitr::include_graphics("./images/PC_varExplained.png")
 ```
 
 As this PC variance plot shows, the first component carries the largest amount of variance. This large weight on the first component may be driven by collinearity among regions which is to be expected to some degree. Still, some variance was captured in smaller components. For ease of visualization 3 components were chosen for clustering variables.
 
-```{r PCelbow, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Elbow plot of PC clustering"}
-knitr::include_graphics("./images/PC_elbowplot.png")
-```
 Again, just as in the untouched correlation matrices, there was no clear elbow to guide choice of numbers of clusters but it appeared that 4 would be a reasonable choice.
 
-```{r PCelbow, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Elbow plot of PC clustering"}
+```{r PCelbow, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Elbow plot of PC clustering"}
 knitr::include_graphics("./images/PC_elbowplot.png")
+```
+Thus we executed the following:
+```{r pcaKmeanCode,  eval=FALSE}
+#PCA and Kmean. Data should be the combined corr. matrix.
+pc = prcomp(sapply(data[,-c(1:2)], as.numeric), center= TRUE)
 ```
 
 Plots of the cluster assignment were dubious. Although they seemed to make clean divisions along the PC dimensions, there did not appear to be any natural grouping of the data to drive this results and it was suspected that large amounts of this may be spurious.
-```{r PCclustering, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Plots of Principle Component and Cluster Assignment"}
+```{r PCclustering, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Plots of Principle Component and Cluster Assignment"}
 knitr::include_graphics("./images/PC_clustering.jpg")
 ```
 
 However, on closer inspection, there did appear to be some slight natural grouping of the data in terms of cluster assignment seemingly falling along rough heteroskedasctic levels along the first principle component. This was very interesting because it was suggestive of the thought that variability in connectivity might have an important role in distinguishing brain states.
-```{r PCplots, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Plots of Principle Component Values"}
+```{r PCplots, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Plots of Principle Component Values"}
 knitr::include_graphics("./images/PC_plots.png")
 ```
 
 But the clean cut separation of connectivity states translated only marginally in terms of it's accuracy in representing mental states. There appeared to be a high amount representation of InfOtherNeg in cluster 1, cluster 2 had no clearcut grouping, cluster 3 perhaps had a slight over representation of passive viewing, and again cluster 4 had no clear groupings. This leaves room for much susicion in the inferences neuroscientists are currently drawing on these techniques.
-```{r PCconfusion, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Confusion Matrix PC Components"}
+```{r PCconfusion, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Confusion Matrix PC Components"}
 knitr::include_graphics("./images/PC_confusionMatrix.jpg")
 ```
 
 
-<!--- What code snippets to put here? --->
-
 ### Clustering on Graph Metrics
-The preceeding clustering approaches relied on local differences in neural coordination. However, it is well known that the brain exhibits global properties that are important for cognition (@bertolero2015modular). Therefore we attempted to cluster matrices on two widely used graph metrics in neuroscience, rich club structure 
-<!--- What code snippets to put here? --->
+The preceeding clustering approaches relied on local differences in neural coordination. However, it is well known that the brain exhibits global properties that are important for cognition (@bertolero2015modular). Therefore we attempted to cluster matrices on two widely used graph metrics in neuroscience, rich club structure which provides a measure of the number of highly connected nodes and the mean path length which is related to communication efficiency. Graphs were constructed from thresholding of the correlation matrices setting all correlation coefficients less than $\rho = .85$ to 0. For visualization, network shown below have been thresholded at $\rho < .93$. Examples of the resultant graphs are provided.
 
+```{r network1, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Network generated for InfOwnNeg connectivity"}
+knitr::include_graphics("./images/infownneg.png")
+```
+
+```{r network2, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Network generated for EmoLookNeg connectivity"}
+knitr::include_graphics("./images/emolookneg.png")
+```
+
+Rich club coefficients and mean path lengths were calculated as follows:
+```{r richAndMean, eval=FALSE}
+library(brainGraph)
+library(igraph)
+richclub_coef = numeric(432)
+mean_dist = numeric(432)
+for (i in 1:length(x)) {
+  file = read.csv(x[i])
+  cor_mat = as.matrix(file)
+  data = cor_mat[,-1]
+  rownames(data) = data[,1]
+  for (j in 1:116) {
+    for (k in 1:116) {
+      if(colnames(data)[j] == fin$Name[k])
+        colnames(data)[j] = fin$Code[k]
+    }
+  }
+  rownames(data) = colnames(data)
+  cor_g <- graph_from_adjacency_matrix(data, mode='directed',
+                                       weighted = 'correlation')
+  cor_edge_list <- igraph::as_data_frame(cor_g, 'edges')
+  only_sig <- cor_edge_list[abs(cor_edge_list$correlation)>.85 &
+                              abs(cor_edge_list$correlation)<1 , ]
+  new_g <- graph_from_data_frame(only_sig, T)
+  bg = make_brainGraph(new_g, atlas = "aal116")
+  richclub_coef[i] = rich_club_coeff(bg)$phi  
+  mean_dist[i] = mean_distance(bg)
+}
+
+
+results = data.frame("Data" = x, "Rich_Club_Coefficient" = richclub_coef,
+                     "Avg_path_length" = mean_dist)
+
+```
+
+Within-cluster distances again indicated that 4 clusters may be an appropriate choice.
+```{r graphWCdist, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Within Cluster distances for graph poperties clustering"}
+knitr::include_graphics("./images/GraphMetrics-kmeans.png")
+```
+
+
+The graph metrics were treated as if they were $<x,y>$ coordinates and subjected to k-means clustering.
+
+```{r graphConfusion, echo=FALSE, out.width="200px", fig.align="center", fig.cap="Confusion matrix for graph poperties clustering"}
+knitr::include_graphics("./images/ConfusionMatrix-GraphMetrics.JPG")
+```
+A more wholistic measure of the network also performed poorly, although there does seem to be some differential splitting among clusters 2 and 3 along valence lines. No other category seemed to provide such diffential splitting suggesting differences in emotional valence processing may show distinct patterns of connectivity which would be consistent with the broader literature of affective connectivity.
 
 Although it was planned to make quantitative assessments of purity post-clustering, given the consistently poor clustering results across all approaches, this did not seem needed until more accurate approaches to brain network clustering are devised. Hence we deviate from our proposal to only provide qualitative assessment of clustering accuracy.
 
 # Alternate Classification Approaches
-Beyond k-means other algorithms were tested to see if they might be able to surpass the current best performance. Both Support Vector Machines applied to the correlation matrices pre-stimuli reassignment, and random forests post-reassignment showed results that seemed little better than random assignment. Thus they are not reported in full here, but mentioned as algorithms that do not seem appropriate for brain network clustering.
-## SVM
-## Random Forests
+Additionally we decided to cluster our correlation matrix using SVM and Random Forest to see if it would yield any acceptable performance.  Afterall, SVM and Random Forest seem to be heavily used algorithm to tackle classifications.  Our initial result was utter failure with 88\% Error rates when we used Random Forest with 100 trees and number of variables sampled at each split 5000. Initial results of SVM seemed little better than chance. We decided not to troubleshoot further due to lack of time and the computational demands of these approaches on such a large dataset.
 
-<!--- What code snippets to put here? --->
+Additionally we decided to cluster our correlation matrix using Random Forest to see if it would yield any acceptable performance.  Afterall, Random Forest seems to be heavily used to tackle classification problems.  Our initial result was an utter failure with when we used Random Forest with 100 trees and number of variables sampled at each split 5000.  The error rate of 88\% was calculated by the in-built algorithm.  We hypothesize that the failure to classify our correlation matrix into 10 categories is caused by lack of sufficient variance within individual correlation.  This suspicion seem warranted when we observe the graph of Within Sum Squared (WSS) values of K-Mean clustering, the decrease in WSS was empirically negligible for clusters considered beyond four clusters.  Therefore, it seemed reasonable to suspect the failure in attempts to cluster the correlation matrix into 10 groups would fail since additional clusters (after 4th) would not capture sufficient variance.  We decided not to troubleshoot further due to lack of time. 
+
+## Random Forest
+The results of random forest classification are as follows:
+```{r randomForest, eval=FALSE}
+data=read.csv("corr.matrix.combined.csv", header = TRUE)
+
+head(data)
+x_val=data[,-1]
+y_val=data[,1]
+library(randomForest)
+
+model_rf=randomForest(x_val,y_val,mtry=5000, ntree = 100)
+```
+
+```{r RFresults, echo=FALSE, out.width="400px", fig.align="center", fig.cap="Results of Random Forest Clustering"}
+knitr::include_graphics("./images/randomForestResults.png")
+```
+## Support Vector Machines
+SVM was calculated in the following manner:
+```{r svm, eval=FALSE}
+library(caret)
+ctrl = trainControl(method = "cv", savePred=T, classProb=T)
+SVM_mod = train(y_val~as.matrix(x_val), method = "svmLinear", trControl = ctrl)
+```
+
  
 # Discussion
-<!-- What are the big takeaways here? What worked? What failed especially well? What are the recommendations for researchers trying to choose a clustering algorithm? What are the limitations of this work? What are the future directions? -->
+Although no method performed particularly well, there were some winners and losers. SVM and Random Forests should not be used to cluster imaging data as they performed by far the worst. PCA decomposition, although not stellar, provided slightly better results. Graph theoretic measures did not perform substantially better but it is entirely plausible that the particular graph meterics were not well suited and therefore we recommend that this area recieve more exploration to assess its importance.
+
+There were servere limitations to this particular dataset that impede generalization more broadly. The subjects in this cohort had extremely high levels of head motion. This is a well known cause of noise in fMRI data (@van2012influence) and although efforts were made to screen for unacceptable levels of head motion, there still were elevated levels which may have impeded clustering. Although the imediate implication is that these analyses should be conducted in a cleaner dataset, it may also serve to highlight the role of noise in dynamic connectivity and serve as a reminder to the field to make all efforts to minimize other sources of noise such as heartbeat and respiration. Another limitation is our deviation from more standard dynamic connectivity pipelines in disrupting the temporal order of our stimuli matrices, but this was necessitated by the data and not a point that we believe detracts substantially from the interprettability of results.
+
+Until the point however that more conclusive studies are conducted there should be a stong suspicion kept around drawing conclusions about cognition from the results of k-means or any other clustering technique. To our knowledge, this is the first study of its kind to take a systematic approach to testing the relationship between clustered transient brain connectivity and infered mental contents. On the basis of our work the assumption that such clusters respresent unitary cognitive states is untenable.
+
+It is the hope of the authors of this class project that the presummed relationship between mind states and brain states is viewed with a weary eye.
 
 # Appendix A.
 
